@@ -1,9 +1,13 @@
+// chatRoutes.js
 const express = require('express');
+const router = express.Router();
 const chatController = require('../controllers/chatController');
+const { authenticate } = require('../middleware/authMiddleware'); // Middleware for authentication
 
-const chatrouter = express.Router();
+// Send a chat message
+router.post('/send',  chatController.sendMessage);
 
-chatrouter.post('/send', chatController.sendMessage);
-chatrouter.get('/history', chatController.getChatHistory);
+// Get chat messages
+router.get('/:userId',chatController.getChatMessages);
 
-module.exports = chatrouter;
+module.exports = router;

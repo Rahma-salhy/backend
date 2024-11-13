@@ -1,35 +1,40 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+// chatController.js
+// const { Chat } = require('../models'); // Adjust the path as necessary
 
-// Send Message
+// Send a chat message
 exports.sendMessage = async (req, res) => {
-  const { message, senderId, receiverId } = req.body;
-  console.log("Message:", message);
-  
-  try {
-    const newMessage = await prisma.chat.create({
-      data: {
-        message,
-        senderId,
-        receiverId,
-      },
-    });
-    res.status(201).json(newMessage);
-  } catch (error) {
-    console.error("Error sending message:", error);
-    res.status(500).json({ error: 'Failed to send message' });
-  }
+    try {
+        const { message, receiverId } = req.body;
+        const senderId = req.user.id; // Assuming you have user info in req.user
+
+        const chat = await Chat.create({
+            message,
+            senderId,
+            receiverId,
+        });
+        
+        res.status(201).json(chat);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to send message' });
+    }
 };
 
-// Get Chat History between Two Users
-exports.getChatHistory = async (req, res) => {
-  // const { senderId, receiverId } = req.query;
+// Get chat messages between two users
+exports.getChatMessages = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const senderId = req.user.id; // Assuming you have user info in req.user
 
-  try {
-    const messages = await prisma.chat.findMany();
-    res.status(200).json(messages);
-  } catch (error) {
-    console.error("Error retrieving chat history:", error);
-    res.status(500).json({ error: 'Failed to retrieve messages' });
-  }
+        const chats = await Chat.findAll({
+            where: {
+                senderId: senderId,
+                receiverId: userId,
+            },
+            order: [['createdAt', 'ASC']],
+        });
+        
+        res.status(200).json(chats);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to retrieve messages' });
+    }
 };

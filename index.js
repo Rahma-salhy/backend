@@ -12,42 +12,17 @@ const getProdBytitleRouter = require("./routes/getOneProdRoutes.js");
 const uploadRoutes = require("./config/upload.js");
 const express = require('express');
 const router = require("./routes/authRoutes.js");
-const http = require('http');
-const { Server } = require('socket.io');
-const chatrouter = require('./routes/chatRoutes');
 const wishlistRoutes = require("./routes/wishlistRoutes");
 const adminRoutes = require("./routes/adminRoutes.js");
 const prisma = new PrismaClient();
 const app = express();
-
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: 'http://localhost:5173', 
-    methods: ["GET", "POST"],
-    credentials: true
-  },
-});
-    
+const chatRoutes = require('./routes/chatRoutes.js');
 
 
-io.on('connection', (socket) => {
-  console.log('ok');
-  
-  console.log('A user connected: ', socket.id);
 
-  socket.on('sendMessage', (messageData) => {
-    console.log('Message received: ', messageData);
 
-    socket.to(messageData.receiverId).emit('receiveMessage', messageData); 
-    socket.emit('receiveMessage', messageData);
-  });
 
-  socket.on('fetchChatHistory', ({ senderId, receiverId }) => {
-    const chatHistory = getChatHistoryFromDatabase(senderId, receiverId);
-    socket.emit('chatHistory', chatHistory);
-  });
-});
+
 
 
 app.use(cors());
@@ -57,7 +32,6 @@ app.use(bodyParser.json());
 app.use("/api/products", productRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/orders", orderRoutes);
-app.use("/api/chats", chatrouter);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/auth", authRoutes);
@@ -67,6 +41,7 @@ app.use("/api", uploadRoutes);
 app.use("/api" , router)
 app.use("/api", wishlistRoutes);
 app.use("/api/admin", adminRoutes);
+app.use('/api/chat', chatRoutes);
 
 
 
